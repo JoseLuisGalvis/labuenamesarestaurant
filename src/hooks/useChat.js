@@ -1,5 +1,6 @@
 // src/hooks/useChat.js
 import { useState, useRef, useEffect } from "react";
+import { getBackendUrl } from "../utils/getBackendUrl";
 
 const useChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,8 +9,11 @@ const useChat = () => {
   const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
 
+  const backendUrl = getBackendUrl(); // 👈 AUTO–SELECCIÓN dev/prod
+
   // 🔍 DEBUG
   console.log("useChat render:", {
+    backendUrl,
     input: typeof input,
     isRef: input?.current !== undefined,
   });
@@ -39,7 +43,7 @@ const useChat = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/chat`, {
+      const res = await fetch(`${backendUrl}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -47,7 +51,9 @@ const useChat = () => {
           sessionId: Date.now().toString(),
         }),
       });
+
       const data = await res.json();
+
       setMsgs([
         ...newMsgs,
         {
@@ -68,14 +74,14 @@ const useChat = () => {
     }
   };
 
-  // 🆕 Función para resetear el chat
+  // Resetear chat
   const reset = () => {
     setMsgs([]);
     setInput("");
     setLoading(false);
   };
 
-  // 🆕 Cerrar Y resetear
+  // Cerrar y resetear
   const closeChat = () => {
     setIsOpen(false);
     reset();
@@ -84,7 +90,7 @@ const useChat = () => {
   return {
     isOpen,
     setIsOpen,
-    closeChat, // 🆕 Exportar closeChat
+    closeChat,
     msgs,
     input,
     setInput,
